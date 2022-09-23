@@ -56,3 +56,56 @@ builder.Services.AddDbContext<TodoDb>(opt => opt.UseInMemoryDatabase("TodoList")
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 The DI container provides access to the database context and other services.
 
+
+
+Prevent over-posting
+Currently the sample app exposes the entire Todo object. Production apps typically limit the data that's 
+input and returned using a subset of the model. There are multiple reasons behind this and security is a 
+major one. The subset of a model is usually referred to as a Data Transfer Object (DTO), input model, or 
+view model. DTO is used in this article.
+
+A DTO may be used to:
+Prevent over-posting.
+Hide properties that clients are not supposed to view.
+Omit some properties in order to reduce payload size.
+Flatten object graphs that contain nested objects. Flattened object graphs can be more convenient for 
+clients.
+To demonstrate the DTO approach, update the Todo class to include a secret field:
+
+C#
+
+Copy
+public class Todo
+{
+    public int Id { get; set; }
+    public string? Name { get; set; }
+    public bool IsComplete { get; set; }
+    public string? Secret { get; set; }
+}
+The secret field needs to be hidden from this app, but an administrative app could choose to expose it.
+
+Verify you can post and get the secret field.
+
+Create a DTO model:
+public class TodoItemDTO
+{
+    public int Id { get; set; }
+    public string? Name { get; set; }
+    public bool IsComplete { get; set; }
+
+    public TodoItemDTO() { }
+    public TodoItemDTO(Todo todoItem) =>
+    (Id, Name, IsComplete) = (todoItem.Id, todoItem.Name, todoItem.IsComplete);
+}
+
+
+Differences between minimal APIs and APIs with controllers
+No support for filters: For example, no support for IAsyncAuthorizationFilter, IAsyncActionFilter, IAsyncExceptionFilter, IAsyncResultFilter, and IAsyncResourceFilter.
+No support for model binding, i.e. IModelBinderProvider, IModelBinder. Support can be added with a custom binding shim.
+No support for binding from forms. This includes binding IFormFile. We plan to add support for IFormFile in the future.
+No built-in support for validation, i.e. IModelValidator
+No support for application parts or the application model. There's no way to apply or build your own conventions.
+No built-in view rendering support. We recommend using Razor Pages for rendering views.
+No support for JsonPatch
+No support for OData
+No support for ApiVersioning. See this issue for more details.
