@@ -23,3 +23,36 @@ Remove the two "launchUrl": "swagger", lines from the Properties/launchSettings.
 When the launchUrl isn't specified, the web browser requests the / endpoint.
 
 Run the app. Hello World! is displayed. The updated Program.cs file contains a minimal but complete app
+
+
+NuGet packages for EF core:
+dotnet add package Microsoft.EntityFrameworkCore.InMemory
+dotnet add package Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
+
+
+The sample app contains the following model:
+class Todo
+{
+    public int Id { get; set; }
+    public string? Name { get; set; }
+    public bool IsComplete { get; set; }
+}
+A model is a class that represents data that the app manages. The model for this app is the Todo class.
+
+The sample app also contains the following database context class:
+class TodoDb : DbContext
+{
+    public TodoDb(DbContextOptions<TodoDb> options)
+        : base(options) { }
+
+    public DbSet<Todo> Todos => Set<Todo>();
+}
+The database context is the main class that coordinates Entity Framework functionality for a data model. 
+This class is created by deriving from the Microsoft.EntityFrameworkCore.DbContext class.
+
+The following highlighted code adds the database context to the dependency injection (DI) container and 
+enables displaying database-related exceptions:
+builder.Services.AddDbContext<TodoDb>(opt => opt.UseInMemoryDatabase("TodoList"));
+builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+The DI container provides access to the database context and other services.
+
